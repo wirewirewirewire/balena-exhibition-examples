@@ -1,0 +1,61 @@
+version: "2"
+volumes:
+  workdir:
+  settings:
+  xserver:
+services:
+  balena-control:
+    image: bh.cr/gh_smarthomeagentur/control-aarch64
+    restart: always
+    privileged: true
+    devices:
+      - /dev/dri
+    group_add:
+      - video
+    ports:
+      - "3009"
+      - "3005"
+      - "80"
+    volumes:
+      - "xserver:/tmp/.X11-unix"
+    labels:
+      io.resin.features.dbus: "1"
+      io.resin.features.kernel-modules: "1"
+      io.resin.features.firmware: "1"
+      io.balena.features.supervisor-api: "1"
+  balena-player:
+    image: bh.cr/gh_smarthomeagentur/player-rpi
+    volumes:
+      - "workdir:/usr/src/app/media"
+      - "xserver:/tmp/.X11-unix"
+    privileged: true
+    network_mode: host
+    ports:
+      - 6666:6666
+    devices:
+      - /dev/dri
+    group_add:
+      - video
+    labels:
+      io.resin.features.dbus: "1"
+      io.resin.features.kernel-modules: "1"
+      io.resin.features.firmware: "1"
+      io.balena.features.supervisor-api: "1"
+  downloader:
+    image: bh.cr/gh_smarthomeagentur/downloader-aarch64
+    privileged: true
+    ports:
+      - 3000:3000
+    volumes:
+      - "workdir:/usr/src/app/update_live" # shared workdir for other services
+    labels:
+      io.resin.features.dbus: "1"
+      io.resin.features.kernel-modules: "1"
+      io.resin.features.firmware: "1"
+      io.balena.features.supervisor-api: "1"
+  xserver:
+    image: bh.cr/gh_smarthomeagentur/xserver-aarch64
+    restart: always
+    privileged: true
+    volumes:
+      - "xserver:/tmp/.X11-unix"

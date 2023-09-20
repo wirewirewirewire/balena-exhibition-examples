@@ -1,0 +1,60 @@
+version: "2"
+volumes:
+  workdir:
+  settings:
+  xserver:
+services:
+  balena-control:
+    image: bh.cr/gh_smarthomeagentur/control-amd64
+    restart: always
+    privileged: true
+    devices:
+      - /dev/dri
+    group_add:
+      - video
+    ports:
+      - "3009"
+      - "3005"
+      - "80"
+    volumes:
+      - "xserver:/tmp/.X11-unix"
+    labels:
+      io.resin.features.dbus: "1"
+      io.resin.features.kernel-modules: "1"
+      io.resin.features.firmware: "1"
+      io.balena.features.supervisor-api: "1"
+  browser:
+    image: bh.cr/gh_smarthomeagentur/browser-amd64
+    ports:
+      - "5011" # management API (optional)
+      - "35173" # Chromium debugging port (optional)
+    devices:
+      - /dev/dri
+    group_add:
+      - video
+    volumes:
+      - "settings:/data" # Only required if using PERSISTENT flag (see below)
+      - "xserver:/tmp/.X11-unix" # external xserver needed
+    labels:
+      io.resin.features.dbus: "1"
+      io.resin.features.kernel-modules: "1"
+      io.resin.features.firmware: "1"
+      io.balena.features.supervisor-api: "1"
+  downloader:
+    image: bh.cr/gh_smarthomeagentur/downloader-amd64
+    privileged: true
+    ports:
+      - 3000:3000
+    volumes:
+      - "workdir:/usr/src/app/update_live" # shared workdir for other services
+    labels:
+      io.resin.features.dbus: "1"
+      io.resin.features.kernel-modules: "1"
+      io.resin.features.firmware: "1"
+      io.balena.features.supervisor-api: "1"
+  xserver:
+    image: bh.cr/gh_smarthomeagentur/xserver-amd64
+    restart: always
+    privileged: true
+    volumes:
+      - "xserver:/tmp/.X11-unix"
