@@ -26,18 +26,19 @@ services:
       io.resin.features.kernel-modules: "1"
       io.resin.features.firmware: "1"
       io.balena.features.supervisor-api: "1"
-  browser:
-    image: bh.cr/gh_smarthomeagentur/browser-amd64
+  balena-player:
+    image: bh.cr/gh_smarthomeagentur/player-amd64
+    volumes:
+      - "workdir:/usr/src/app/media"
+      - "xserver:/tmp/.X11-unix"
+    privileged: true
+    network_mode: host
     ports:
-      - "5011" # management API (optional)
-      - "35173" # Chromium debugging port (optional)
+      - 6666:6666
     devices:
       - /dev/dri
     group_add:
       - video
-    volumes:
-      - "settings:/data" # Only required if using PERSISTENT flag (see below)
-      - "xserver:/tmp/.X11-unix" # external xserver needed
     labels:
       io.resin.features.dbus: "1"
       io.resin.features.kernel-modules: "1"
